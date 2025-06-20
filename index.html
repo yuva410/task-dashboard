@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Task List</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Arial';
+      background: #0f0f0f;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    .glow-box {
+      background: #1e1e1e;
+      border: 2px solid #00f7ff;
+      box-shadow: 0 0 20px #00f7ff;
+      padding: 20px;
+      margin: 10px auto;
+      max-width: 400px;
+      border-radius: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #00f7ff;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    input {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #00f7ff;
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-section" class="glow-box">
+    <h2>Login</h2>
+    <input id="email" type="text" placeholder="Username (User/Admin)" /><br>
+    <input id="password" type="password" placeholder="Password" /><br>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="dashboard" class="glow-box" style="display:none">
+    <h2>Live Task Dashboard</h2>
+    <div id="task-list"></div>
+    <div id="admin-panel" style="display:none">
+      <h3>Add Task</h3>
+      <input id="task-name" placeholder="Task name" />
+      <button onclick="addTask()">Add</button>
+    </div>
+    <br><button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDePfDOIRJL0nKIHaI7DLsz3XKw5Q-kU54",
+      authDomain: "requestsystem-60202.firebaseapp.com",
+      projectId: "requestsystem-60202",
+      storageBucket: "requestsystem-60202.appspot.com",
+      messagingSenderId: "881681029472",
+      appId: "1:881681029472:web:b27267a387b8acb77876b3",
+      measurementId: "G-L3THMGJXTD",
+      databaseURL: "https://requestsystem-60202-default-rtdb.firebaseio.com/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function login() {
+      const username = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      if ((username === "User" && password === "7/2000") ||
+          (username === "Admin" && password === "14/4000")) {
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        if (username === "Admin") {
+          document.getElementById("admin-panel").style.display = "block";
+        }
+        loadTasks();
+      } else {
+        alert("Invalid credentials");
+      }
+    }
+
+    function logout() {
+      location.reload();
+    }
+
+    function addTask() {
+      const name = document.getElementById("task-name").value;
+      const key = db.ref().child('tasks').push().key;
+      db.ref('tasks/' + key).set({ name: name, status: "Pending" });
+      document.getElementById("task-name").value = "";
+    }
+
+    function loadTasks() {
+      const list = document.getElementById("task-list");
+      db.ref('tasks').on('value', snapshot => {
+        list.innerHTML = '';
+        snapshot.forEach(child => {
+          const task = child.val();
+          const div = document.createElement("div");
+          div.innerHTML = `<strong>${task.name}</strong> - ${task.status}`;
+          list.appendChild(div);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
